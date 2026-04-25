@@ -1,23 +1,38 @@
-export default function Home() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+import { supabase } from "@/lib/supabase";
+import Link from "next/link";
+
+export default async function Home() {
+  // 試しに最新の5件の記事を取得してみる
+  const { data: posts } = await supabase
+    .from('wiki_pages')
+    .select('title')
+    .limit(5);
 
   return (
-    <div style={{ padding: "40px", fontFamily: "sans-serif" }}>
-      <h1>🛠️ Supabase 接続テスト</h1>
-      <div style={{ background: "#f0f0f0", padding: "20px", borderRadius: "8px" }}>
-        <p><strong>URLの設定:</strong> {url ? "✅ 設定済み" : "❌ 未設定"}</p>
-        <p><strong>Keyの設定:</strong> {key ? "✅ 設定済み" : "❌ 未設定"}</p>
+    <div className="container">
+      <h1>TRPG百科事典 ポータル</h1>
+      
+      <section style={{ marginTop: '20px' }}>
+        <h2>✅ Supabase 接続完了！</h2>
+        <p>あなたの「本棚」と正常につながっています。</p>
+      </section>
+
+      <section style={{ marginTop: '40px' }}>
+        <h3>最近の記事</h3>
+        <ul>
+          {posts?.map((post) => (
+            <li key={post.title}>
+              <Link href={`/wiki/${encodeURIComponent(post.title)}`}>
+                {post.title}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <div style={{ marginTop: '40px', fontSize: '0.9rem', color: '#666' }}>
+        <p>※新しい記事を表示するには、Supabaseの管理画面からデータを追加してください。</p>
       </div>
-      {url && key ? (
-        <p style={{ color: "green", marginTop: "20px" }}>
-          🚀 完璧です！これでデータベースを操作する準備が整いました。
-        </p>
-      ) : (
-        <p style={{ color: "red", marginTop: "20px" }}>
-          ⚠️ 設定がまだ反映されていないようです。VercelのEnvironment Variablesを再確認してください。
-        </p>
-      )}
     </div>
   );
 }

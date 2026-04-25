@@ -1,26 +1,47 @@
-@import "tailwindcss";
-
+/* 変数を使って色を管理するとNext.jsで扱いやすくなります */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+    --primary-blue: #005faf;
+    --accent-teal: #0095A4;
+    --deep-navy: #223670;
+    --bg-light-blue: #f0f8ff;
+    --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* 少し柔らかい影に */
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+    font-family: 'Yuji Syuku', serif;
+    background: linear-gradient(180deg, #e6f2ff 0%, #ffffff 100%); /* 縦のグラデーション */
+    color: #333; /* 真っ黒より少しだけグレーにすると目に優しい */
+}
+
+.container {
+    /* ...既存の設定... */
+    box-shadow: var(--card-shadow);
+    border: 1px solid rgba(0, 95, 175, 0.1); /* 非常に薄い青の枠線 */
+}
+
+h2 {
+    position: relative;
+    padding-left: 15px;
+    border-bottom: none; /* 下線を一度消して... */
+}
+
+h2::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 6px;
+    height: 100%;
+    background-color: var(--primary-blue);
+    border-radius: 3px; /* 左側にアクセントの棒を立てる */
+}
+
+h2::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(to right, var(--primary-blue), transparent); /* 右に消える下線 */
 }
