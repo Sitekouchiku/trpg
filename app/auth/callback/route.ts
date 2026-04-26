@@ -3,44 +3,36 @@ import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
 export async function GET(request: Request) {
+  // request.url から origin と searchParams を取得
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
+  const next = searchParams.get('next') ?? '/';
 
   if (code) {
-    // ちゃんと待つ（Next.js 15のルール）
     const cookieStore = await cookies();
-
-    // 最新の @supabase/ssr を使った安全な書き方
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
         cookies: {
-          get(name: string) {
-            return cookieStore.get(name)?.value;
-          },
+          get(name: string) { return cookieStore.get(name)?.value; },
           set(name: string, value: string, options: CookieOptions) {
-            try {
-              cookieStore.set({ name, value, ...options });
-            } catch (error) {
-              // エラーを握りつぶす（サーバー側の制約回避）
-            }
+            try { cookieStore.set({ name, value, ...options }); } catch (error) {}
           },
           remove(name: string, options: CookieOptions) {
-            try {
-              cookieStore.set({ name, value: '', ...options });
-            } catch (error) {
-              // エラーを握りつぶす
-            }
+            try { cookieStore.set({ name, value: '', ...options }); } catch (error) {}
           },
         },
       }
     );
 
-    await supabase.auth.exchangeCodeForSession(code);
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    if (error) {
+      console.error('Auth error:', error.message);
+      return NextResponse.redirect(`${origin}/auth/auth-code-error`);
+    }
   }
 
-    // ログイン成功後、アクセスしてきた「元の場所」へ戻す
-    // requestUrl.origin を使うことで、localhostならlocalhost、VercelならVercelのURLになります
-    return NextResponse.redirect(requestUrl.origin);
+  // ここで origin と next を組み合わせてリダイレクト
+  return NextResponse.redirect(`${origin}${next}`);
 }

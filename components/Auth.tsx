@@ -4,7 +4,6 @@ import { createBrowserClient } from "@supabase/ssr";
 import { useEffect, useState } from "react";
 
 export default function Auth() {
-  // 最新の @supabase/ssr を使ったクライアントの呼び出し方
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -22,7 +21,7 @@ export default function Auth() {
     };
     getUser();
 
-    // ログイン・ログアウトの変更をリアルタイムで検知する
+    // ログイン・ログアウトの変更をリアルタイムで検知
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
     });
@@ -30,12 +29,12 @@ export default function Auth() {
     return () => subscription.unsubscribe();
   }, [supabase]);
 
-    const handleLogin = async () => {
+  const handleLogin = async () => {
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        // 固定のURLではなく、今開いているサイトのURLを自動取得する
-        redirectTo: `${window.location.origin}/auth/callback`,
+        // 現在のページ(例: /rooms/123)を取得し、nextパラメータに付与
+        redirectTo: `${window.location.origin}/auth/callback?next=${window.location.pathname}`,
       },
     });
   };
@@ -44,48 +43,31 @@ export default function Auth() {
     await supabase.auth.signOut();
   };
 
-  // 読み込み中の一瞬のチラつきを防ぐ
+  // 読み込み中の表示
   if (loading) {
-    return <div style={{ padding: "20px", border: "1px solid #ddd", borderRadius: "8px" }}>読み込み中...</div>;
+    return <div>読み込み中...</div>;
   }
 
+  // 画面のUI部分をしっかり return する
   return (
-    <div style={{ padding: "20px", border: "1px solid #ddd", borderRadius: "8px", backgroundColor: "#f9f9f9" }}>
+    <div>
       {user ? (
         <div>
-          {/* 名前が取得できない場合はメールアドレスを表示 */}
-          <p style={{ fontWeight: "bold" }}>👤 {user.user_metadata?.full_name || user.email} さん</p>
+          <p>ログイン中: {user.email}</p>
           <button 
-            onClick={handleLogout} 
-            style={{ 
-              cursor: "pointer", 
-              marginTop: "10px", 
-              padding: "6px 12px", 
-              borderRadius: "4px", 
-              border: "1px solid #ccc" 
-            }}
+            onClick={handleLogout}
+            style={{ padding: "8px 16px", cursor: "pointer" }}
           >
             ログアウト
           </button>
         </div>
       ) : (
-        <div>
-          <p style={{ marginBottom: "10px" }}>編集に参加するにはログインしてください</p>
-          <button 
-            onClick={handleLogin}
-            style={{ 
-              padding: "8px 16px", 
-              backgroundColor: "#4285F4", 
-              color: "white", 
-              border: "none", 
-              borderRadius: "4px", 
-              cursor: "pointer",
-              fontWeight: "bold"
-            }}
-          >
-            Googleでログイン
-          </button>
-        </div>
+        <button 
+          onClick={handleLogin}
+          style={{ padding: "8px 16px", cursor: "pointer" }}
+        >
+          Googleでログイン
+        </button>
       )}
     </div>
   );
