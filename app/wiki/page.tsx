@@ -87,7 +87,7 @@ export default async function WikiTop() {
           <p style={{ fontSize: '0.9rem', color: '#444', lineHeight: '1.6' }}>
             ここは雨氷卓のTRPGセッションに関する情報をまとめるWikiです。
             <br />誰でも閲覧可能ですが、編集にはログインが必要です。
-            <br />現在サイトを鋭意製作中ですので、ログインはできますが編集はできない状況です。よろしくお願いします。
+            <br />現在サイトを製作中ですので、<span style={{ color: 'red' }}>ログインはできますが編集はできない状況です。</span>よろしくお願いします。
           </p>
           <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid #ddd' }}>
             <h4 style={{ fontSize: '0.9rem', marginBottom: '10px' }}>クイックリンク</h4>
