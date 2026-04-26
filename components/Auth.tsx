@@ -30,11 +30,12 @@ export default function Auth() {
     return () => subscription.unsubscribe();
   }, [supabase]);
 
-  const handleLogin = async () => {
+    const handleLogin = async () => {
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${location.origin}/auth/callback`,
+        // 固定のURLではなく、今開いているサイトのURLを自動取得する
+        redirectTo: `${window.location.origin}/auth/callback`,
       },
     });
   };

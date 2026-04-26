@@ -40,6 +40,7 @@ export async function GET(request: Request) {
     await supabase.auth.exchangeCodeForSession(code);
   }
 
-  // ログイン成功後、トップページへ戻る
-  return NextResponse.redirect(origin);
+    // ログイン成功後、アクセスしてきた「元の場所」へ戻す
+    // requestUrl.origin を使うことで、localhostならlocalhost、VercelならVercelのURLになります
+    return NextResponse.redirect(requestUrl.origin);
 }
