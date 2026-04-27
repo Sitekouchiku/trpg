@@ -1,5 +1,11 @@
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: '雨氷卓百科事典',
+  description: '雨氷卓の世界観の解説記事をまとめています。',
+};
 
 // 常に最新のデータを取得するための設定
 export const revalidate = 0;

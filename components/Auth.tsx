@@ -2,6 +2,8 @@
 
 import { createBrowserClient } from "@supabase/ssr";
 import { useEffect, useState } from "react";
+// 履歴コンポーネントを読み込む（パスは作成した場所に合わせて調整してください）
+import BrowsingHistory from "./BrowsingHistory";
 
 export default function Auth() {
   const supabase = createBrowserClient(
@@ -13,7 +15,6 @@ export default function Auth() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // 現在のログイン状態を取得
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
@@ -21,7 +22,6 @@ export default function Auth() {
     };
     getUser();
 
-    // ログイン・ログアウトの変更をリアルタイムで検知
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
     });
@@ -33,7 +33,6 @@ export default function Auth() {
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        // 現在のページ(例: /rooms/123)を取得し、nextパラメータに付与
         redirectTo: `${window.location.origin}/auth/callback?next=${window.location.pathname}`,
       },
     });
@@ -43,28 +42,46 @@ export default function Auth() {
     await supabase.auth.signOut();
   };
 
-  // 読み込み中の表示
   if (loading) {
     return <div>読み込み中...</div>;
   }
 
-  // 画面のUI部分をしっかり return する
   return (
     <div>
       {user ? (
         <div>
-          <p>ログイン中: {user.email}</p>
+          {/* 前回ログイン時刻 */}
+          <p style={{ fontWeight: "bold", margin: "10px 0" }}>
+            前回ログイン : {new Date(user.last_sign_in_at).toLocaleString('ja-JP')}
+          </p>
+          
+          {/* ウェルカムメッセージ */}
+          <p style={{ fontWeight: "bold", marginBottom: "20px" }}>
+            ようこそ！ {user.user_metadata?.name || user.email} さんのマイページです。
+          </p>
+
           <button 
             onClick={handleLogout}
-            style={{ padding: "8px 16px", cursor: "pointer" }}
+            style={{ 
+              padding: "10px 20px", 
+              cursor: "pointer",
+              backgroundColor: "#f5f5f5",
+              border: "1px solid #999",
+              borderRadius: "4px"
+            }}
           >
             ログアウト
           </button>
+
+          {/* ★ ここが追加：ログアウトボタンのすぐ下に履歴を表示 */}
+          <div style={{ marginTop: "20px" }}>
+            <BrowsingHistory mode="display" />
+          </div>
         </div>
       ) : (
         <button 
           onClick={handleLogin}
-          style={{ padding: "8px 16px", cursor: "pointer" }}
+          style={{ padding: "10px 20px", cursor: "pointer" }}
         >
           Googleでログイン
         </button>
