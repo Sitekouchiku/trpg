@@ -2,6 +2,7 @@
 import { Yuji_Syuku } from 'next/font/google'; // フォントをインポート
 import './globals.css'; // さっき作ったCSSを読み込む
 import BrowsingHistory from '@/components/BrowsingHistory';
+import GlobalMenu from "@/components/GlobalMenu";
 
 const yuji = Yuji_Syuku({ 
   weight: '400',
@@ -16,7 +17,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={yuji.className}>
         {/* ★ 全てのページの裏側で「保存」が自動で走るようになります */}
         <BrowsingHistory mode="save" />
-        
+        <GlobalMenu /> {/* これで全てのページに自動メニューが出る */}
         {/* children には各ページ（page.tsx）の中身が入ります */}
         <div className="container">
           {children}
