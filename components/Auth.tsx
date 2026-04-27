@@ -50,9 +50,9 @@ export default function Auth() {
     <div>
       {user ? (
         <div>
-          {/* 前回ログイン時刻 */}
+          {/* 今回のログイン時刻 */}
           <p style={{ fontWeight: "bold", margin: "10px 0" }}>
-            前回ログイン : {new Date(user.last_sign_in_at).toLocaleString('ja-JP')}
+            ログイン時刻 : {new Date(user.last_sign_in_at).toLocaleString('ja-JP')}
           </p>
           
           {/* ウェルカムメッセージ */}
