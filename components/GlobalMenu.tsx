@@ -12,7 +12,7 @@ export default function GlobalMenu() {
     .filter(dirent => dirent.isDirectory()) // フォルダだけを抽出
     .filter(dirent => !dirent.name.startsWith('(') && !dirent.name.startsWith('_') && dirent.name !== 'api') // 特殊なフォルダを除外
     .filter(dirent => {
-        const excludelist = ["auth","docs"]
+        const excludelist = ["auth"]// ここに非表示にしたいサイトを入れる
         return !excludelist.includes(dirent.name) && !dirent.name.startsWith('(') && !dirent.name.startsWith('_');
     })
     .map(dirent => {
@@ -30,7 +30,9 @@ export default function GlobalMenu() {
       {folders.map((item) => (
         <Link key={item.path} href={item.path} style={{ textDecoration: "none", color: "#333" }}>
           {item.name === "Wiki" ? "📚 Wiki" : 
-           item.name === "Dice" ? "🎲 Dice" : item.name}
+           item.name === "Dice" ? "🎲 Dice" : 
+           item.name === "Docs" ? "📖 Docs" :
+           item.name}
         </Link>
       ))}
     </nav>

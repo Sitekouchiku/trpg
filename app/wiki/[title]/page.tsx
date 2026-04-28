@@ -2,6 +2,7 @@ import { supabase } from "../../../lib/supabase";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
+
 // 1. 動的にメタデータを設定（ブラウザのタブ名にタイトルを反映）
 export async function generateMetadata({ params }: { params: Promise<{ title: string }> }): Promise<Metadata> {
   const { title } = await params;
