@@ -28,7 +28,7 @@ export default async function WikiTop() {
   }
 
   return (
-    <div style={{ maxWidth: '900px', margin: '0 auto', padding: '40px 20px', fontFamily: 'sans-serif' }}>
+    <div style={{ maxWidth: '900px', margin: '0 auto', padding: '40px 20px'}}>
       <header style={{ borderBottom: '3px solid #333', marginBottom: '30px', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
         <h1 style={{ fontSize: '2.5rem', margin: 0 }}>📚 雨氷卓 Wiki</h1>
         <Link href="/" style={{ color: '#666', textDecoration: 'none' }}>← ポータルへ</Link>
