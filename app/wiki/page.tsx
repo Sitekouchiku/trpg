@@ -49,7 +49,7 @@ export default async function WikiTop() {
                 cursor: 'pointer',
                 fontWeight: 'bold'
               }}>
-                ＋新規記事を作成するボタン<br />（未リンク）
+                ＋新規記事作成
               </button>
             </Link>
           </div>
@@ -82,7 +82,7 @@ export default async function WikiTop() {
             </div>
           ) : (
             <p style={{ color: '#888', textAlign: 'center', marginTop: '50px' }}>
-              まだ記事がありません。右上のボタンから最初の記事を書きましょう！
+              まだ記事がありません。緑色の新規作成ボタンから最初の記事を書きましょう！
             </p>
           )}
         </main>
@@ -91,9 +91,9 @@ export default async function WikiTop() {
         <aside style={{ backgroundColor: '#f8f9fa', padding: '20px', borderRadius: '8px', height: 'fit-content' }}>
           <h3 style={{ fontSize: '1.1rem', marginTop: 0 }}>Wikiについて</h3>
           <p style={{ fontSize: '0.9rem', color: '#444', lineHeight: '1.6' }}>
-            ここは雨氷卓のTRPGセッションに関する情報をまとめるWikiです。
-            <br />誰でも閲覧可能ですが、編集にはログインが必要です。
-            <br />現在サイトを製作中ですので、<span style={{ color: 'red' }}>ログインはできますが編集はできない状況です。</span>よろしくお願いします。
+            ここは雨氷卓の世界観に関する情報をまとめるWikiです。
+            <br />誰でも閲覧可能ですが、編集にはログインが必要です。<br /><span style={{textDecoration:"underline wavy",fontWeight:"bold"}}>追記：現在はログイン不要です</span>
+            <br />現在サイトを製作中ですので、<span style={{ color: 'red' }}>新規記事作成のみ可能です。</span>よろしくお願いします。
           </p>
           <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid #ddd' }}>
             <h4 style={{ fontSize: '0.9rem', marginBottom: '10px' }}>クイックリンク</h4>
