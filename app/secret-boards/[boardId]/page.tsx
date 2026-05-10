@@ -1,15 +1,33 @@
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createServerClient } from '@supabase/ssr'; // 変更
 import { cookies } from 'next/headers';
-import { notFound } from 'next/navigation';
-import SecretChat from '@/components/SecretChat'; // @が使えない場合は ../../../components/SecretChat
+import { notFound, redirect } from 'next/navigation'; // redirectを追加
+import SecretChat from '@/components/SecretChat';
 
 export default async function BoardPage({ params }: { params: { boardId: string } }) {
-  const supabase = createServerComponentClient({ cookies });
-  const { data: { session } } = await supabase.auth.getSession();
+  const cookieStore = cookies();
 
-  if (!session) return <div>ログインが必要です</div>;
+  // サーバー用クライアントの作成
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        async get(name: string) {
+          return (await cookieStore).get(name)?.value;
+        },
+      },
+    }
+  );
 
-  // ボードの存在確認（RLSにより、権限がないとここではデータが取れず404になります）
+  // 安全なユーザー取得方法に変更
+  const { data: { user } } = await supabase.auth.getUser();
+
+  // ログインしていない場合はログイン画面（またはトップ）へ
+  if (!user) {
+    redirect('/'); 
+  }
+
+  // ボードの存在確認
   const { data: board } = await supabase
     .from('secret_boards')
     .select('*')
@@ -26,7 +44,8 @@ export default async function BoardPage({ params }: { params: { boardId: string 
       <h1 className="text-xl font-bold mb-4 text-orange-900 leading-tight">
         {board.title} <span className="text-sm font-normal text-gray-500">(秘匿会話)</span>
       </h1>
-      <SecretChat boardId={params.boardId} myId={session.user.id} />
+      {/* user.id を渡す */}
+      <SecretChat boardId={params.boardId} myId={user.id} />
     </div>
   );
 }

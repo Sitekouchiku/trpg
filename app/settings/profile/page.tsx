@@ -1,11 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { useState } from 'react';
+import { createBrowserClient } from '@supabase/ssr'; // ここを変更
 import { useRouter } from 'next/navigation';
 
 export default function ProfileSettings() {
-  const supabase = createClientComponentClient();
+  // 環境変数を使ってブラウザ用クライアントを作成
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+  
   const router = useRouter();
   const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(false);
@@ -16,24 +21,33 @@ export default function ProfileSettings() {
 
     const { data: { user } } = await supabase.auth.getUser();
 
+    if (!user) {
+      alert("ログインセッションが切れています。");
+      setLoading(false);
+      return;
+    }
+
     const { error } = await supabase
       .from('profiles')
       .upsert({
-        id: user?.id,
-        email: user?.email,
+        id: user.id,
+        email: user.email,
         username: username,
+        updated_at: new Date().toISOString(),
       });
 
     if (error) {
-      alert('そのユーザー名は既に使われているか、無効です。');
+      console.error(error);
+      alert(`エラー: ${error.message}`);
     } else {
       alert('ニックネームを登録しました！');
-      router.push('/secret-boards'); // 登録後は掲示板一覧へ
+      router.push('/secret-boards');
       router.refresh();
     }
     setLoading(false);
   };
 
+  // ... (return以降のJSXは変更なしでOK)
   return (
     <div className="max-w-md mx-auto mt-20 p-6 bg-white border-2 border-orange-200 rounded-xl shadow-lg">
       <h1 className="text-2xl font-bold text-orange-800 mb-6">雨氷卓へようこそ</h1>

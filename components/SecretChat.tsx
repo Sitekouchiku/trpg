@@ -1,13 +1,23 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createBrowserClient } from '@supabase/ssr'; // 変更
 
 export default function SecretChat({ boardId, myId }: { boardId: string, myId: string }) {
-  const supabase = createClientComponentClient();
+  // クライアントの作成（環境変数を渡す）
+  const [supabase] = useState(() => createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  ));
+
   const [messages, setMessages] = useState<any[]>([]);
   const [input, setInput] = useState('');
   const scrollEndRef = useRef<HTMLDivElement>(null);
+
+  // 自動スクロール用
+  useEffect(() => {
+    scrollEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
   // メッセージ取得 & リアルタイム購読
   useEffect(() => {
@@ -42,7 +52,9 @@ export default function SecretChat({ boardId, myId }: { boardId: string, myId: s
       })
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
+    return () => { 
+      supabase.removeChannel(channel); 
+    };
   }, [boardId, supabase]);
 
   // 送信処理
@@ -56,7 +68,10 @@ export default function SecretChat({ boardId, myId }: { boardId: string, myId: s
       content: input,
     });
 
-    if (error) alert("秘匿の送信に失敗しました...");
+    if (error) {
+      console.error(error);
+      alert("秘匿の送信に失敗しました...");
+    }
     setInput('');
   };
 
@@ -65,7 +80,7 @@ export default function SecretChat({ boardId, myId }: { boardId: string, myId: s
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((m) => (
           <div key={m.id} className={`flex flex-col ${m.sender_id === myId ? 'items-end' : 'items-start'}`}>
-            <span className="text-xs text-gray-500 mb-1">{m.profiles?.username}</span>
+            <span className="text-xs text-gray-500 mb-1">{m.profiles?.username || 'unknown'}</span>
             <div className={`px-4 py-2 rounded-2xl max-w-[80%] ${
               m.sender_id === myId ? 'bg-orange-500 text-white rounded-tr-none' : 'bg-gray-200 text-gray-800 rounded-tl-none'
             }`}>

@@ -1,11 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createBrowserClient } from '@supabase/ssr'; // 変更
 import { useRouter } from 'next/navigation';
 
 export default function NewBoardPage() {
-  const supabase = createClientComponentClient();
+  // ブラウザ用クライアントを初期化
+  const [supabase] = useState(() => createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  ));
+  
   const router = useRouter();
   const [title, setTitle] = useState('');
   const [targetUsername, setTargetUsername] = useState('');
@@ -29,6 +34,7 @@ export default function NewBoardPage() {
 
       if (userError || !opponent) {
         alert('指定されたユーザー名が見つかりません。');
+        setLoading(false); // 追加
         return;
       }
 
@@ -46,12 +52,13 @@ export default function NewBoardPage() {
       if (boardError) throw boardError;
 
       // 4. 完成したらその部屋へ飛ばす
+      alert('掲示板を作成しました！');
       router.push(`/secret-boards/${newBoard.id}`);
       router.refresh();
 
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert('作成に失敗しました。');
+      alert(`作成に失敗しました: ${err.message}`);
     } finally {
       setLoading(false);
     }
