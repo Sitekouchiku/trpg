@@ -1,179 +1,127 @@
 "use client";
 
-import { createBrowserClient } from "@supabase/ssr";
 import { useEffect, useState } from "react";
-// 履歴コンポーネントを読み込む
-import BrowsingHistory from "./BrowsingHistory";
+import { createBrowserClient } from "@supabase/ssr";
 
 export default function Auth() {
-  // ブラウザ用クライアントの初期化（Next.jsの再レンダリング対策でuseStateを使用）
-  const [supabase] = useState(() =>
-    createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
-  );
-
   const [user, setUser] = useState<any>(null);
   const [profileName, setProfileName] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // profilesテーブルからユーザーネームを取得する関数
-  const fetchProfileName = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("username")
-        .eq("id", userId)
-        .single();
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
 
-      if (data && !error) {
-        setProfileName(data.username);
-      }
-    } catch (e) {
-      console.error("プロフィール取得エラー:", e);
-    }
+  // ログイン時刻を整形する関数
+  const formatDateTime = (dateString: string) => {
+    if (!dateString) return "不明";
+    return new Date(dateString).toLocaleString("ja-JP", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   };
 
   useEffect(() => {
-    let isMounted = true;
-
-    const initializeAuth = async () => {
+    const getData = async () => {
+      setIsLoading(true);
       try {
-        // 1. まず現在のユーザーを確認（getUserを使用）
-        const { data: { user: currentUser }, error } = await supabase.auth.getUser();
+        // 1. ユーザー情報の取得
+        const { data: { user } } = await supabase.auth.getUser();
+        setUser(user);
 
-        if (error || !currentUser) {
-          if (isMounted) {
-            setUser(null);
-            setLoading(false);
-          }
-        } else {
-          if (isMounted) {
-            setUser(currentUser);
-            await fetchProfileName(currentUser.id);
-            setLoading(false);
+        if (user) {
+          // 2. SupabaseのDB(profilesテーブル)からユーザー名を取得しようと試みる
+          // ※テーブル名やカラム名はご自身の環境に合わせて調整してください
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("username")
+            .eq("id", user.id)
+            .single();
+
+          if (profile?.username) {
+            setProfileName(profile.username);
           }
         }
-      } catch (e) {
-        console.error("初期化エラー:", e);
-        if (isMounted) setLoading(false);
+      } catch (error) {
+        console.error("データ取得エラー:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    initializeAuth();
+    getData();
 
-    // 2. 状態変化を監視（サインイン/アウト時に即座に反映させるため）
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (!isMounted) return;
-
-      if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
-        const newUser = session?.user ?? null;
-        setUser(newUser);
-        if (newUser) await fetchProfileName(newUser.id);
-        setLoading(false);
-      }
-
+    // 認証状態の監視
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null);
       if (event === "SIGNED_OUT") {
-        setUser(null);
         setProfileName(null);
-        setLoading(false);
       }
     });
 
-    return () => {
-      isMounted = false;
-      subscription.unsubscribe();
-    };
+    return () => subscription.unsubscribe();
   }, [supabase]);
 
-  const handleLogin = async () => {
-    // 確実に「交換所（callback）」を経由させるための設定
+  // ログイン処理
+  const handleGoogleLogin = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        // nextパラメータを含めてリダイレクト先を指定
-        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(window.location.pathname)}`,
-        queryParams: {
-          access_type: "offline",
-          prompt: "consent",
-        },
+        redirectTo: `${window.location.origin}/auth/callback`,
       },
     });
-
-    if (error) {
-      console.error("ログインエラー:", error.message);
-      alert("ログインに失敗しました。");
-    }
+    if (error) alert(error.message);
   };
 
-  const handleLogout = async () => {
+  // ログアウト処理
+  const handleSignOut = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
-      console.error("ログアウトエラー:", error.message);
+      alert("ログアウトに失敗しました");
+    } else {
+      // 画面をリロードして状態をリセット
+      window.location.reload();
     }
-    // 状態を完全にクリアするためにリロード（必須ではないが確実）
-    window.location.reload();
   };
 
-  if (loading) {
-    return (
-      <div className="p-4 text-orange-800 font-bold animate-pulse">
-        読み込み中...
-      </div>
-    );
-  }
+  if (isLoading) return <div className="p-4">読み込み中...</div>;
 
   return (
-    <div className="p-4 border border-orange-100 rounded-lg bg-orange-50/30">
+    <div className="p-6 max-w-md mx-auto bg-white rounded-xl shadow-md space-y-4">
       {user ? (
-        <div>
-          {/* 今回のログイン時刻 */}
-          <p className="text-sm text-gray-600 font-bold my-[10px]">
-            ログイン時刻 :{" "}
-            {user.last_sign_in_at
-              ? new Date(user.last_sign_in_at).toLocaleString("ja-JP")
-              : "取得中..."}
-          </p>
-
-          {/* ウェルカムメッセージ */}
-          <p className="text-lg text-orange-900 font-bold mb-[20px]">
-            ようこそ！{" "}
-            <span className="text-orange-600 underline">
+        <div className="space-y-3">
+          <div className="border-b pb-2">
+            <h3 className="text-sm text-gray-500">ユーザー名：</h3>
+            <p className="text-lg font-bold">
+              {/* 優先順位: DBのユーザー名 > Googleの名前 > メールアドレス */}
               {profileName || user.user_metadata?.full_name || user.email}
-            </span>{" "}
-            さんのマイページです。
-          </p>
+            </p>
+          </div>
+
+          <div>
+            <h3 className="text-sm text-gray-500">ログイン時刻：</h3>
+            <p className="text-sm text-gray-700">
+              {formatDateTime(user.last_sign_in_at)}
+            </p>
+          </div>
 
           <button
-            onClick={handleLogout}
-            style={{
-              padding: "10px 20px",
-              cursor: "pointer",
-              backgroundColor: "#fff",
-              border: "1px solid #fb923c",
-              borderRadius: "4px",
-            }}
-            className="hover:bg-orange-100 transition-colors"
+            onClick={handleSignOut}
+            className="w-full py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition"
           >
             ログアウト
           </button>
-
-          {/* 履歴を表示 */}
-          <div className="mt-[20px] pt-4 border-t border-orange-200">
-            <BrowsingHistory mode="display" />
-          </div>
         </div>
       ) : (
-        <div className="text-center py-8">
-          <p className="mb-4 text-gray-600">
-            セッションを開始して秘匿ボードに参加しましょう
-          </p>
+        <div className="text-center">
+          <p className="mb-4 text-gray-600">ログインすると、認証が必要な項目を閲覧できます。</p>
           <button
-            onClick={handleLogin}
-            className="bg-orange-600 text-white px-8 py-3 rounded-full font-bold hover:bg-orange-700 transition-all shadow-lg hover:shadow-orange-200"
+            onClick={handleGoogleLogin}
+            className="w-full py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
           >
             Googleでログイン
           </button>
