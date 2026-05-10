@@ -50,14 +50,14 @@ export default function ProfileSettings() {
   // ... (return以降のJSXは変更なしでOK)
   return (
     <div className="max-w-md mx-auto mt-20 p-6 bg-white border-2 border-orange-200 rounded-xl shadow-lg">
-      <h1 className="text-2xl font-bold text-orange-800 mb-6">雨氷卓へようこそ</h1>
-      <p className="text-sm text-gray-600 mb-4">活動に使用するニックネームを決めてください。</p>
+      <h1 className="text-2xl font-bold text-orange-800 mb-6">ニックネーム</h1>
+      <p className="text-sm text-gray-600 mb-4">新規登録・変更はすべてこのページで行えます。</p>
       <form onSubmit={saveProfile} className="space-y-4">
         <input
           type="text"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-          placeholder="例: rin_m"
+          placeholder="どんな文字でも対応してます"
           className="w-full p-3 border-2 border-orange-100 rounded focus:border-orange-400 outline-none"
           required
         />
@@ -65,7 +65,7 @@ export default function ProfileSettings() {
           disabled={loading}
           className="w-full bg-orange-600 text-white py-3 rounded-lg font-bold hover:bg-orange-700 transition"
         >
-          {loading ? '登録中...' : 'この名前で始める'}
+          {loading ? '登録中...' : '名前を登録（変更）'}
         </button>
       </form>
     </div>
