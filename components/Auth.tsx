@@ -88,7 +88,7 @@ export default function Auth() {
     }
   };
 
-  if (isLoading) return <div className="p-4">読み込み中...</div>;
+  if (isLoading) return <div className="p-4">読み込み中..</div>;
 
   return (
     <div className="p-6 max-w-md mx-auto bg-white rounded-xl shadow-md space-y-4">
