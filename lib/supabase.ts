@@ -1,7 +1,6 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from '@supabase/supabase-js'
 
-// あなたのプロジェクト専用の「URL」と「鍵」をここに書きます
-const supabaseUrl = 'https://bhyqszurwmepsrjabsds.supabase.co';
-const supabaseAnonKey = 'sb_publishable_Ik7UDRhDXHyml3Clgv9w1g_JL-7JsqS';
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey)

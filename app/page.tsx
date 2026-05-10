@@ -27,6 +27,8 @@ export default async function Home() {
       <section style={{ marginTop: '40px' }}>
         <h2>このサイトは何？</h2>
         <p>雨氷卓KPが個人的に作成したサイト群です。<br />現在旧サイトから開発環境のリニューアルを行い、より高度なサイトを構築しています。</p>
+        <h2>サイトマップ</h2>
+        <p>・<a href="/wiki">雨氷卓百科事典</a><br />・<a href=""></a></p>
       </section>
 
       <section style={{ marginTop: '40px' }}>
