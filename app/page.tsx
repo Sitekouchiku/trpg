@@ -30,6 +30,7 @@ export default async function Home() {
       </section>
 
       <section style={{ marginTop: '40px' }}>
+        <meta name="google-site-verification" content="uq2wZ9OR8DAUpV3OGrCWTt3ug60eiLrjZcBpRxgRox4" />
         <h2>このサイトは何？</h2>
         <p>雨氷卓KPが個人的に作成したサイト群です。<br />現在旧サイトから開発環境のリニューアルを行い、より高度なサイトを構築しています。</p>
         <h2>サイトマップ</h2>
