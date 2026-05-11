@@ -8,13 +8,18 @@ export const metadata: Metadata = {
   description: '雨氷卓のTRPGセッション情報をまとめるサイトです',
 };
 
+// 1. ページの一番上（import文のあたり）にこれを追加してキャッシュを無効化
+export const dynamic = 'force-dynamic'; 
+
 export default async function Home() {
-  // 試しに最新の5件の記事を取得してみる
+  // 2. 作成日時(created_at)の降順（新しい順）で並び替えて取得
   const { data: posts } = await supabase
     .from('wiki_pages')
     .select('title')
+    .order('created_at', { ascending: false }) // これが重要！
     .limit(5);
 
+  // ...あとの表示処理はそのまま
   return (
     <div className="container" style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
       <h1>雨氷卓ポータル</h1>
@@ -45,7 +50,7 @@ export default async function Home() {
       </section>
 
       <div style={{ marginTop: '40px', fontSize: '0.9rem', color: '#666' }}>
-        <p>※新しい記事を表示するには、Supabaseの管理画面からデータを追加してください。</p>
+        <p>※こちらのサイトから作成された記事が、最近の記事に反映されていない事象が発生しております。原因究明までお待ちください。</p>
       </div>
     </div>
   );

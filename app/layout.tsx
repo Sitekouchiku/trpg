@@ -57,6 +57,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="ja">
       <body className={yuji.className}>
+        <meta name="google-site-verification" content="googlec252d31c5620fb17.html" />
         <BrowsingHistory mode="save" />
         <GlobalMenu />
         {/* divをより意味のある main タグに変更（任意） */}
