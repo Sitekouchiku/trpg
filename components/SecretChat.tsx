@@ -1,63 +1,58 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
-import { createBrowserClient } from '@supabase/ssr'; // 変更
+import { useState, useEffect, useCallback } from 'react';
+// ここを最新のライブラリに切り替えています
+import { createBrowserClient } from '@supabase/ssr';
 
-export default function SecretChat({ boardId, myId }: { boardId: string, myId: string }) {
-  // クライアントの作成（環境変数を渡す）
-  const [supabase] = useState(() => createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  ));
-
+export default function SecretChat({ boardId, myId }: { boardId: string; myId: string }) {
   const [messages, setMessages] = useState<any[]>([]);
   const [input, setInput] = useState('');
-  const scrollEndRef = useRef<HTMLDivElement>(null);
 
-  // 自動スクロール用
-  useEffect(() => {
-    scrollEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  // ブラウザ用クライアントの初期化
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
 
-  // メッセージ取得 & リアルタイム購読
-  useEffect(() => {
-    const fetchMessages = async () => {
-      const { data } = await supabase
-        .from('secret_messages')
-        .select('*, profiles(username)')
-        .eq('board_id', boardId)
-        .order('created_at', { ascending: true });
+  const fetchMessages = useCallback(async () => {
+    const { data, error } = await supabase
+      .from('secret_messages')
+      .select('*')
+      .eq('board_id', boardId)
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      console.error("履歴取得エラー:", error);
+    } else {
       setMessages(data || []);
-    };
-
-    fetchMessages();
-
-    const channel = supabase
-      .channel(`realtime:secret_${boardId}`)
-      .on('postgres_changes', { 
-        event: 'INSERT', 
-        schema: 'public', 
-        table: 'secret_messages', 
-        filter: `board_id=eq.${boardId}` 
-      }, async (payload) => {
-        // 新着メッセージに投稿者の名前を紐付ける
-        const { data: userData } = await supabase
-          .from('profiles')
-          .select('username')
-          .eq('id', payload.new.sender_id)
-          .single();
-        
-        const newMessage = { ...payload.new, profiles: userData };
-        setMessages((prev) => [...prev, newMessage]);
-      })
-      .subscribe();
-
-    return () => { 
-      supabase.removeChannel(channel); 
-    };
+    }
   }, [boardId, supabase]);
 
-  // 送信処理
+  useEffect(() => {
+    fetchMessages();
+
+    // リアルタイム通信の設定
+    const channel = supabase
+      .channel(`chat:${boardId}`)
+      .on(
+        'postgres_changes',
+        { 
+          event: 'INSERT', 
+          schema: 'public', 
+          table: 'secret_messages', 
+          filter: `board_id=eq.${boardId}` 
+        },
+        (payload) => {
+          setMessages((prev) => [...prev, payload.new]);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [boardId, supabase, fetchMessages]);
+
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
@@ -69,37 +64,57 @@ export default function SecretChat({ boardId, myId }: { boardId: string, myId: s
     });
 
     if (error) {
-      console.error(error);
-      alert("秘匿の送信に失敗しました...");
+      console.error("送信エラー:", error);
+      alert("送信に失敗しました");
+    } else {
+      setInput('');
     }
-    setInput('');
   };
 
   return (
-    <div className="flex flex-col h-[70vh] bg-white/80 rounded-lg shadow-inner border border-orange-200">
+    <div className="flex flex-col h-[600px] bg-white border-2 border-orange-200 rounded-lg shadow-inner">
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((m) => (
-          <div key={m.id} className={`flex flex-col ${m.sender_id === myId ? 'items-end' : 'items-start'}`}>
-            <span className="text-xs text-gray-500 mb-1">{m.profiles?.username || 'unknown'}</span>
-            <div className={`px-4 py-2 rounded-2xl max-w-[80%] ${
-              m.sender_id === myId ? 'bg-orange-500 text-white rounded-tr-none' : 'bg-gray-200 text-gray-800 rounded-tl-none'
-            }`}>
-              {m.content}
+        {messages.length === 0 && (
+          <p className="text-center text-gray-400 mt-10 text-sm italic font-serif">
+            ――まだ秘匿は語られていません。
+          </p>
+        )}
+        {messages.map((msg) => (
+          <div
+            key={msg.id}
+            className={`flex ${msg.sender_id === myId ? 'justify-end' : 'justify-start'}`}
+          >
+            <div
+              className={`max-w-[80%] p-3 rounded-2xl shadow-sm ${
+                msg.sender_id === myId
+                  ? 'bg-orange-600 text-white rounded-tr-none'
+                  : 'bg-orange-100 text-gray-800 rounded-tl-none'
+              }`}
+            >
+              <p className="whitespace-pre-wrap text-sm leading-relaxed">{msg.content}</p>
+              <span className="block text-[10px] mt-1 opacity-70 text-right">
+                {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </span>
             </div>
           </div>
         ))}
-        <div ref={scrollEndRef} />
       </div>
-      <form onSubmit={sendMessage} className="p-4 border-t border-orange-100 flex gap-2">
-        <input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="秘匿会話を入力..."
-          className="flex-1 p-2 border border-orange-200 rounded focus:outline-none focus:ring-2 focus:ring-orange-400"
-        />
-        <button className="bg-orange-600 text-white px-6 py-2 rounded hover:bg-orange-700 transition shadow-md">
-          送信
-        </button>
+
+      <form onSubmit={sendMessage} className="p-4 border-t border-orange-100 bg-orange-50 rounded-b-lg">
+        <div className="flex gap-2">
+          <textarea
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            className="flex-1 p-3 border-2 border-orange-100 rounded-lg focus:outline-none focus:border-orange-400 resize-none h-14 text-sm"
+            placeholder="メッセージを入力..."
+          />
+          <button
+            type="submit"
+            className="bg-orange-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-orange-700 transition-all active:scale-95 shadow-md"
+          >
+            送信
+          </button>
+        </div>
       </form>
     </div>
   );
