@@ -1,12 +1,14 @@
 import { supabase } from "../../../lib/supabase";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+// ★追加：削除処理を行うためのボタン（クライアントコンポーネント）をインポート
+import { DeleteButton } from "./DeleteButton"; 
 
-
-// 1. 動的にメタデータを設定（ブラウザのタブ名にタイトルを反映）
+// 1. 動的にメタデータを設定
 export async function generateMetadata({ params }: { params: Promise<{ title: string }> }): Promise<Metadata> {
   const { title } = await params;
   const decodedTitle = decodeURIComponent(title);
+
   return {
     title: `${decodedTitle} - Wiki`,
   };
@@ -28,6 +30,9 @@ export default async function WikiPage({ params }: { params: Promise<{ title: st
   if (error || !post) {
     notFound();
   }
+
+  // ★追加：編集ページ（/wiki/new）に送るために、タイトルを安全な形式にエンコードしておく
+  const encodedTitle = encodeURIComponent(post.title);
 
   return (
     <div className="container" style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
@@ -64,6 +69,29 @@ export default async function WikiPage({ params }: { params: Promise<{ title: st
         style={{ lineHeight: '1.8', fontSize: '1.1rem', marginTop: '20px' }}
         dangerouslySetInnerHTML={{ __html: post.content }} 
       />
+
+      {/* ★追加：管理者用の操作ボタンエリア */}
+      <div style={{ marginTop: '40px', display: 'flex', gap: '12px', borderTop: '2px solid #eee', paddingTop: '20px' }}>
+        {/* 編集ボタン：クリックすると既存のタイトルを抱えて新規作成画面に飛びます */}
+        <a 
+          href={`/wiki/new?edit=${encodedTitle}`} 
+          style={{ 
+            backgroundColor: '#f0ad4e', 
+            color: 'white', 
+            textDecoration: 'none', 
+            padding: '10px 20px', 
+            borderRadius: '5px', 
+            fontSize: '0.9rem', 
+            fontWeight: 'bold',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+          }}
+        >
+          ⚙️ この記事を編集する
+        </a>
+
+        {/* 削除ボタン：切り出した子コンポーネントを呼び出す */}
+        <DeleteButton id={post.id} title={post.title} />
+      </div>
 
       {/* 7. フッター（戻るリンク） */}
       <div style={{ marginTop: '50px', borderTop: '1px solid #eee', paddingTop: '20px' }}>
