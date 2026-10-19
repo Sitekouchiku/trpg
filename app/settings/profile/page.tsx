@@ -31,7 +31,6 @@ export default function ProfileSettings() {
       .from('profiles')
       .upsert({
         id: user.id,
-        email: user.email,
         username: username,
         updated_at: new Date().toISOString(),
       });

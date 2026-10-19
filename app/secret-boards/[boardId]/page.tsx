@@ -23,7 +23,7 @@ export default async function BoardPage({ params }: { params: Promise<{ boardId:
   );
 
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect('/auth/login');
+  if (!user) redirect('/');
 
   // 掲示板情報とメンバー情報を一気に取得
   const { data: board } = await supabase
