@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 // ★追加：削除処理を行うためのボタン（クライアントコンポーネント）をインポート
 import { DeleteButton } from "./DeleteButton"; 
+import DOMPurify from "isomorphic-dompurify";
 
 // 1. 動的にメタデータを設定
 export async function generateMetadata({ params }: { params: Promise<{ title: string }> }): Promise<Metadata> {
@@ -30,6 +31,16 @@ export default async function WikiPage({ params }: { params: Promise<{ title: st
   if (error || !post) {
     notFound();
   }
+
+  // ↓ 追加:本文をサニタイズ
+  const safeHtml = DOMPurify.sanitize(post.content ?? "", {
+    ALLOWED_TAGS: [
+      "h2", "h3", "p", "strong", "em", "s", "u",
+      "ul", "ol", "li", "pre", "code", "br", "blockquote", "a",
+    ],
+    ALLOWED_ATTR: ["class", "href"],
+  });
+
 
   // ★追加：編集ページ（/wiki/new）に送るために、タイトルを安全な形式にエンコードしておく
   const encodedTitle = encodeURIComponent(post.title);
@@ -67,7 +78,7 @@ export default async function WikiPage({ params }: { params: Promise<{ title: st
       <article 
         className="wiki-content"
         style={{ lineHeight: '1.8', fontSize: '1.1rem', marginTop: '20px' }}
-        dangerouslySetInnerHTML={{ __html: post.content }} 
+        dangerouslySetInnerHTML={{ __html: safeHtml }}  
       />
 
       {/* ★追加：管理者用の操作ボタンエリア */}

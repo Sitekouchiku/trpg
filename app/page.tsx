@@ -34,11 +34,18 @@ export default async function Home() {
         <h2>このサイトは何？</h2>
         <p>雨氷卓KPが個人的に作成したサイト群です。<br />現在旧サイトから開発環境のリニューアルを行い、より高度なサイトを構築しています。</p>
         <h2>サイトマップ</h2>
-        <p>・<a href="/wiki">雨氷卓百科事典</a><br />・<a href=""></a></p>
+        <p>
+           ・<a href="/dice">ダイスロール</a><br />
+           ・<a href="/wiki">雨氷卓百科事典</a><br />
+           ・<a href="/docs">書庫</a><br />
+           ・<a href="/secret-boards">秘匿掲示板</a><br />
+           ・<a href="/settings">設定</a><br />
+           ・<a href="/submitform">編集権について</a><br />
+        </p>
       </section>
 
       <section style={{ marginTop: '40px' }}>
-        <h3>最近の<a href="/wiki">雨氷卓百科事典</a>の記事（旧サイトから移植中）</h3>
+        <h2><a href="/wiki">雨氷卓百科事典</a>の記事（最新５件）</h2>
         <ul>
           {posts?.map((post) => (
             <li key={post.title} style={{ marginBottom: '10px' }}>
@@ -51,7 +58,8 @@ export default async function Home() {
       </section>
 
       <div style={{ marginTop: '40px', fontSize: '0.9rem', color: '#666' }}>
-        <p>※こちらのサイトから作成された記事が、最近の記事に反映されていない事象が発生しております。原因究明までお待ちください。</p>
+        <p>© 2026 雨氷卓KP</p>
+        <p></p>
       </div>
     </div>
   );
