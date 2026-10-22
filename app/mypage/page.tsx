@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "../../lib/supabase";
+import LockManager from "./LockManager";
+import HistoryManager from "./HistoryManager";
 
 type Role = "user" | "admin";
 
@@ -106,7 +108,18 @@ export default function MyPage() {
       {isAdmin && (
         <section style={card}>
           <h3 style={{ marginTop: 0 }}>管理者メニュー</h3>
-          <p>(ここに管理者向けの機能を追加)</p>
+
+          <h4>記事のLock設定</h4>
+          <p style={{ fontSize: "0.9rem", color: "#666" }}>
+            チェックを入れた記事は、編集者が編集できなくなります。
+          </p>
+          <LockManager />
+
+          <h4 style={{ marginTop: "32px" }}>編集履歴(直近50件)</h4>
+          <p style={{ fontSize: "0.9rem", color: "#666" }}>
+            更新前の内容が自動保存されています。「この版に戻す」で復元できます。
+          </p>
+          <HistoryManager />
         </section>
       )}
 

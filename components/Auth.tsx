@@ -103,7 +103,6 @@ return (
             </p>
             <p className="text-xs text-orange-700/70 font-medium">
               ログイン時刻は <span className="text-orange-800">{formatDateTime(user.last_sign_in_at)}</span> です。<br /><br />
-              初回ログイン時は<a href="/settings" className="text-blue-500 hover:underline">Settings</a>⇒プロフィール設定はこちらからニックネームを登録してください。
               ニックネームを登録すると、秘匿会話や掲示板でその名前が表示されるようになります。
             </p>
           </div>
