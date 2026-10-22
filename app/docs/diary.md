@@ -34,3 +34,21 @@
 
 ## 【次回の予定】
 - 認証基盤が安定したため、TRPGアプリのメイン機能である「部屋の作成」や「キャラクターデータの保存」などのDB操作ロジックの実装へ進む。
+
+
+## 2026-10-22
+### 【実施内容】
+- Next.js 脆弱性対応の更新後、Vercel本番でWikiの個別ページが500になった
+  - 原因:`isomorphic-dompurify` → `jsdom` の依存が、Vercel上で `ERR_REQUIRE_ESM` になっていた
+  - 対処:`sanitize-html` に置き換え(jsdom不要になった)
+- 管理者向けにLock設定画面と編集履歴・復元機能を追加
+- `profiles` の名前変更で `permission denied` → GRANTが無かったのが原因。`update` に変更し、`username` 列だけ許可
+
+### 【学んだこと】
+- ローカルで動いても、本番(Vercel)でだけ壊れることがある。更新後は `npm run build` → `npm run start` で確認する
+- RLS(行の制限)とGRANT(テーブルへの権限)は別物。`permission denied` はGRANT側
+- `upsert` には INSERT 権限も必要
+- 管理者判定は画面で隠すだけでなく、DB側(RLS / security definer の関数)で守る
+
+### 【次回の予定】
+- `/docs` の文書ページ(PDF一覧、隠しファイルの `-d` 小ネタ集)
