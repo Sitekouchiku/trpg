@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 // ★追加：削除処理を行うためのボタン（クライアントコンポーネント）をインポート
 import { DeleteButton } from "./DeleteButton"; 
-import DOMPurify from "isomorphic-dompurify";
+import sanitizeHtml from "sanitize-html";
 
 // 1. 動的にメタデータを設定
 export async function generateMetadata({ params }: { params: Promise<{ title: string }> }): Promise<Metadata> {
@@ -33,13 +33,17 @@ export default async function WikiPage({ params }: { params: Promise<{ title: st
   }
 
   // ↓ 追加:本文をサニタイズ
-  const safeHtml = DOMPurify.sanitize(post.content ?? "", {
-    ALLOWED_TAGS: [
-      "h2", "h3", "p", "strong", "em", "s", "u",
-      "ul", "ol", "li", "pre", "code", "br", "blockquote", "a",
-    ],
-    ALLOWED_ATTR: ["class", "href"],
-  });
+const safeHtml = sanitizeHtml(post.content ?? "", {
+  allowedTags: [
+    "h2", "h3", "p", "strong", "em", "s", "u",
+    "ul", "ol", "li", "pre", "code", "br", "blockquote", "a",
+  ],
+  allowedAttributes: {
+    "*": ["class"],
+    a: ["href", "class"],
+  },
+  allowedSchemes: ["http", "https", "mailto"],
+});
 
 
   // ★追加：編集ページ（/wiki/new）に送るために、タイトルを安全な形式にエンコードしておく
