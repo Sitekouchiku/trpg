@@ -5,7 +5,7 @@ import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: '雨氷卓ポータル',
-  description: '雨氷卓のTRPGセッション情報をまとめるサイトです',
+  description: '雨氷卓（TRPG）の情報をまとめるサイトです',
 };
 
 // 1. ページの一番上（import文のあたり）にこれを追加してキャッシュを無効化
@@ -31,8 +31,17 @@ export default async function Home() {
 
       <section style={{ marginTop: '40px' }}>
         <meta name="google-site-verification" content="uq2wZ9OR8DAUpV3OGrCWTt3ug60eiLrjZcBpRxgRox4" />
-        <h2>このサイトは何？</h2>
-        <p>雨氷卓KPが個人的に作成したサイト群です。<br />現在旧サイトから開発環境のリニューアルを行い、より高度なサイトを構築しています。</p>
+        <h2>サイトについて</h2>
+        <p>このサイトは、雨氷卓KPが個人的に作成したコンテンツ群です。<br />
+           現在、旧サイトから開発環境のリニューアルを行い、{/* */}
+           内容の移植並びにサイトのコンテンツ充実化を実施{/* */}
+           しております。一部機能は機能の追加・統合のため{/* */}
+           名称を変更している場合があります。<br />
+           なお、以前のサイト（<a href="https://satsuki-amagori.github.io/portal/">リンク</a>）{/* */}
+           は、こちらのサイトへリダイレクト設定をしておりますので、{/* */}
+           内容の閲覧はできなくなっております。
+
+        </p>
         <h2>サイトマップ</h2>
         <p>
            ・<a href="/dice">ダイスロール</a><br />
