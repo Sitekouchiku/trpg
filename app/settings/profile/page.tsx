@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { createBrowserClient } from '@supabase/ssr'; // ここを変更
+import { createBrowserClient } from '@supabase/ssr';
 import { useRouter } from 'next/navigation';
 
 export default function ProfileSettings() {
@@ -10,7 +10,7 @@ export default function ProfileSettings() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
-  
+
   const router = useRouter();
   const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(false);
@@ -27,17 +27,19 @@ export default function ProfileSettings() {
       return;
     }
 
-    const { error } = await supabase
+    // upsert ではなく update を使う(username 列だけを更新)
+    const { data, error } = await supabase
       .from('profiles')
-      .upsert({
-        id: user.id,
-        username: username,
-        updated_at: new Date().toISOString(),
-      });
+      .update({ username: username })
+      .eq('id', user.id)
+      .select('id');
 
     if (error) {
       console.error(error);
       alert(`エラー: ${error.message}`);
+    } else if (!data || data.length === 0) {
+      // update は対象の行が0件でもエラーにならないので、ここで検知する
+      alert('プロフィールが見つかりませんでした。');
     } else {
       alert('ニックネームを登録しました！');
       router.push('/secret-boards');
@@ -46,7 +48,6 @@ export default function ProfileSettings() {
     setLoading(false);
   };
 
-  // ... (return以降のJSXは変更なしでOK)
   return (
     <div className="max-w-md mx-auto mt-20 p-6 bg-white border-2 border-orange-200 rounded-xl shadow-lg">
       <h1 className="text-2xl font-bold text-orange-800 mb-6">ニックネーム</h1>
